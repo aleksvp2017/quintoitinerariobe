@@ -20,8 +20,7 @@ var Helper = require('./helper.js')
 
 
 
-app.post('/noticias', async (req, res) => {
-    console.log('tentando acessar endpoint protegido')
+app.get('/noticias', async (req, res) => {
     //await sleep(20000).then(() => { console.log("teste atraso!"); });
     var jwt = require('jsonwebtoken')
     jwt.verify(req.token, process.env.SECRET, async (err, decoded) => {
@@ -35,12 +34,87 @@ app.post('/noticias', async (req, res) => {
     })
 })
 
+app.post('/noticias', async (req, res) => {
+    var jwt = require('jsonwebtoken')
+    jwt.verify(req.token, process.env.SECRET, async (err, decoded) => {
+        if (err){
+            Helper.enviaErroAdequado(err, res)
+        }
+        else{
+            let dados = Helper.carregaDadosBanco()
+            let dataPublicacao = "17/04/2020"//new Date().toLocaleDateString("pt-Br")
+            var noticia = {id: Helper.gerarId(dados.noticias), ...req.body.noticia, datapublicacao: dataPublicacao}
+            dados.noticias.push(noticia)
+            let erroAoGravar = false
+            await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
+            if (erroAoGravar){
+                res.status(401).json({error: `Error ao gravar dados ${erroAoGravar}`})
+            }
+            else{
+                res.status(200).json( {mensagem: 'Notícia registrada com sucesso', noticia})
+            }    
+        }
+    })
+})
+
+app.post('/noticias:id', async (req, res) => {
+    var jwt = require('jsonwebtoken')
+    jwt.verify(req.token, process.env.SECRET, async (err, decoded) => {
+        if (err){
+            Helper.enviaErroAdequado(err, res)
+        }
+        else{
+            var noticia = await Helper.procurarNoticia({id: req.body.noticia.id})
+            if (noticia == null){
+                res.status(401).json({error: 'Notícia não encontrada'})
+            }
+            else{
+                let dados = Helper.carregaDadosBanco()
+                const index = dados.noticias.indexOf(req.body.noticia)
+                dados.noticias.splice(index, 1)
+                let dataPublicacao = "17/04/2020"//new Date().toLocaleDateString("pt-Br")
+                noticia = { ...req.body.noticia, datapublicacao: dataPublicacao}
+                dados.noticias.push(noticia)
+                let erroAoGravar = false
+                await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
+                if (erroAoGravar){
+                    res.status(401).json({error: `Error ao gravar dados ${erroAoGravar}`})
+                }
+                else{
+                    res.status(200).json( {mensagem: 'Notícia alterada com sucesso', noticia})
+                }    
+            }
+        }
+    })
+})
+
+app.delete('/noticias/:id', async (req, res) => {
+    var jwt = require('jsonwebtoken')
+    jwt.verify(req.token, process.env.SECRET, async (err, decoded) => {
+        if (err){
+            Helper.enviaErroAdequado(err, res)
+        }
+        else{
+            let dados = Helper.carregaDadosBanco()
+            const index = dados.noticias.indexOf(req.body.noticia)
+            dados.noticias.splice(index, 1)
+            let erroAoGravar = false
+            await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
+            if (erroAoGravar){
+                res.status(401).json({error: `Error ao gravar dados ${erroAoGravar}`})
+            }
+            else{
+                res.status(200).json( {mensagem: 'Notícia apagada com sucesso'})
+            }    
+        }
+    })
+})
+
 
 //endpoint para realizar o login, criando o token
 app.post('/login', async function(req, res, next) {
     var usuario = await Helper.validarUsuario(req.body.usuario, req.body.senha)
     if (usuario != null){
-        console.log('gerando token')
         var jwt = require('jsonwebtoken')
         let token = jwt.sign({ 
                 name: usuario.nome, 
@@ -65,8 +139,7 @@ app.post('/usuario/registrar', async function(req, res, next) {
     if (usuario == null){
         let dados = Helper.carregaDadosBanco()
        
-        dados.usuarios.push({id: Helper.gerarId(dados.usuarios), ...req.body.usuario, senha: Helper.encripta(req.body.usuario.senha)})
-        console.log(Helper.gerarId(dados.usuarios));
+        dados.usuarios.push({id: Helper.gerarId(dados.usuarios), ...req.body.usuario})
 
         let erroAoGravar = false
         await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
@@ -153,9 +226,7 @@ app.post('/mensagem', async function(req, res, next) {
             Helper.enviaErroAdequado(err, res)
         }
         else{
-            console.log('vai enviar')
             Helper.enviarEmail('Fale conosco', mensagemFormatada(req.body), process.env.EMAIL_FALECONSCO).then((mensagem) => {
-                console.log('enviou')
                 res.status(200).json( {mensagem})
             }).catch( error => {
                 console.log(error);
@@ -198,7 +269,6 @@ app.post('/recuperarSenha', async function(req, res, next) {
 
 //endpoint para alterar a senha de um usuário
 app.post('/usuario/alterarSenha', async function(req, res, next) {
-    console.log('Parametros:', req.body)
     var jwt = require('jsonwebtoken')
     jwt.verify(req.token, process.env.SECRET, async (err, decoded) => {
         if (err){
@@ -206,14 +276,12 @@ app.post('/usuario/alterarSenha', async function(req, res, next) {
         }
         else{
             var usuario = await Helper.validarUsuario(req.body.email, req.body.senha)
-            console.log('Usuario validado:', usuario)
             if (usuario == null){
                 res.status(401).json({error: 'Senha atual incorreta'})
             }
             else{
                 let dados = Helper.carregaDadosBanco()
                 usuario.senha = req.body.senhaNova
-                console.log('Usuario alterado', usuario)
                 dados.usuarios = dados.usuarios.filter((usuario) => usuario.id != usuario.id)
                 dados.usuarios.push(usuario)
                 let erroAoGravar = false

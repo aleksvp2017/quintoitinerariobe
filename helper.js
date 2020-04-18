@@ -1,12 +1,12 @@
 const obterNoticias = async () => {
+    var noticias = []
     const axios = require('axios').default
     await axios.get(process.env.DB_URL_NOTICIAS).then((response) => {
-        var noticias = response.data
-        console.log(noticias)
-        return noticias
+        noticias = response.data
     }).catch((error) => {
         console.log('erro ao buscar noticias', error)
     })
+    return noticias
 }
 
 const validarUsuario = async (email, password) => {
@@ -15,11 +15,7 @@ const validarUsuario = async (email, password) => {
     await axios.get(process.env.DB_URL_USERS).then((response) => {
         users = response.data.filter((user) => user.email === email && user.senha === password)
         if (users.length > 0){
-            console.log('usuario valido')
             validUser = users[0]
-        }
-        else{
-            console.log('usuario nao valido')
         }
     }).catch((error) => {
         console.log('erro ao buscar usuarios', error)
@@ -27,6 +23,24 @@ const validarUsuario = async (email, password) => {
     return validUser
 }
 
+const procurarNoticia = async (filtro) => {
+    var noticia = null
+    const axios = require('axios').default
+    await axios.get(process.env.DB_URL_NOTICIAS).then((response) => {
+        var noticias = response.data.filter((noticia) => {
+            if (filtro.id && (noticia.id == filtro.id)){
+                return noticia
+            }
+        })
+
+        if (noticias.length != 0){
+            noticia = noticias[0]
+        }
+    }).catch((error) => {
+        console.log('erro ao buscar notícias', error)
+    })
+    return noticia
+}
 
 const procurarUsuario = async (filtro) => {
     var user = null
@@ -41,11 +55,7 @@ const procurarUsuario = async (filtro) => {
             }
         })
 
-        if (users.length == 0){
-            console.log('usuario ainda nao cadastrado')
-        }
-        else{
-            console.log('usuario já cadastrado')
+        if (users.length != 0){
             user = users[0]
         }
     }).catch((error) => {
@@ -97,7 +107,6 @@ function encripta(senha) {
 
 const enviarEmail = (assunto, mensagem, destinatario) => {
     return new Promise((resolve,reject)=>{
-        console.log('entrou na promise')
         var nodemailer = require('nodemailer');
         var transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -115,14 +124,11 @@ const enviarEmail = (assunto, mensagem, destinatario) => {
         };
         
 
-        console.log('vai chamar sendMail')
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                console.log('enviou em helper')
                 reject(error)
             }
             else {
-                console.log('enviou em helper', info.response)
                 resolve('Mensagem enviada com sucesso')
             }
         });
@@ -131,5 +137,5 @@ const enviarEmail = (assunto, mensagem, destinatario) => {
 
 module.exports = {
     obterNoticias, validarUsuario, procurarUsuario, gerarId, carregaDadosBanco, gravaDadosBanco, 
-    sleep, enviaErroAdequado, encripta, enviarEmail
+    sleep, enviaErroAdequado, encripta, enviarEmail, procurarNoticia
   };
