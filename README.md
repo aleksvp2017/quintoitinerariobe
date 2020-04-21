@@ -12,6 +12,8 @@ json-server --watch db.json
 #instalar dependencias (na raiz do diretório clocado)
 
 npm install
+
+#editar o .env na raiz para incluir secret para geração do token e email do faleconosco
  
 #para rodar o servidor, na raiz, por default sobe na porta 3001
 
