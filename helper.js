@@ -1,13 +1,4 @@
-const obterNoticias = async () => {
-    var noticias = []
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_NOTICIAS).then((response) => {
-        noticias = response.data
-    }).catch((error) => {
-        console.log('erro ao buscar noticias', error)
-    })
-    return noticias
-}
+
 
 const validarUsuario = async (email, password) => {
     var validUser = null
@@ -23,46 +14,6 @@ const validarUsuario = async (email, password) => {
     return validUser
 }
 
-const procurarNoticia = async (filtro) => {
-    var noticia = null
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_NOTICIAS).then((response) => {
-        var noticias = response.data.filter((noticia) => {
-            if (filtro.id && (noticia.id == filtro.id)){
-                return noticia
-            }
-        })
-
-        if (noticias.length != 0){
-            noticia = noticias[0]
-        }
-    }).catch((error) => {
-        console.log('erro ao buscar notícias', error)
-    })
-    return noticia
-}
-
-const procurarUsuario = async (filtro) => {
-    var user = null
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_USERS).then((response) => {
-        users = response.data.filter((user) => {
-            if (filtro.email && (user.email === filtro.email)){
-                return user
-            }
-            if (filtro.id && (user.id == filtro.id)){
-                return user
-            }
-        })
-
-        if (users.length != 0){
-            user = users[0]
-        }
-    }).catch((error) => {
-        console.log('erro ao buscar usuarios', error)
-    })
-    return user
-}
 
 function gerarId(usuarios){
     var id = 0;
@@ -136,6 +87,6 @@ const enviarEmail = (assunto, mensagem, destinatario) => {
 }
 
 module.exports = {
-    obterNoticias, validarUsuario, procurarUsuario, gerarId, carregaDadosBanco, gravaDadosBanco, 
-    sleep, enviaErroAdequado, encripta, enviarEmail, procurarNoticia
+    validarUsuario, gerarId, carregaDadosBanco, gravaDadosBanco, 
+    sleep, enviaErroAdequado, encripta, enviarEmail
   };
