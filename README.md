@@ -13,7 +13,7 @@ json-server --watch db.json
 
 npm install
 
-#editar o .env na raiz para incluir secret para geração do token e email do faleconosco
+#editar o .env na raiz para incluir secret para geração do token, email do faleconosco e secret do provedor de email
  
 #para rodar o servidor, na raiz, por default sobe na porta 3001
 
