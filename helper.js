@@ -63,7 +63,7 @@ const enviarEmail = (assunto, mensagem, destinatario) => {
             service: 'gmail',
             auth: {
             user: 'aleksvp@gmail.com',
-            pass: 'kfkkmgybshywfvxt'
+            pass: process.env.SECRET_PROVEDOR_EMAIL
             }
         });
         
