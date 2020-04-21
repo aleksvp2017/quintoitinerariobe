@@ -1,0 +1,25 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nome": "Aleks",
+      "email": "aleksvp@gmail.com",
+      "senha": "4dff4ea340f0a823f15d3f4f01ab62eae0e5da579ccb851f8db9dfe84c58b2b37b89903a740e1ee172da793a6e79d560e5f7f9bd058a12a280433ed6fa46510a",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQWxla3NhbmRlciIsImVtYWlsIjoiYWxla3N2cEBnbWFpbC5jb20iLCJpYXQiOjE1ODc0MzIyNTcsImV4cCI6MTU4NzQzODI1N30.hgCT8Nb9rmot2ZNyc7tum0D2hntGei_-815a_5oemi0"
+    }
+  ],
+  "noticias": [
+    {
+      "id": 2,
+      "datapublicacao": "20/04/2020",
+      "titulo": "Teste2",
+      "conteudo": "Teste2"
+    },
+    {
+      "id": 3,
+      "datapublicacao": "20/04/2020",
+      "titulo": "Teste3",
+      "conteudo": "Teste3"
+    }
+  ]
+}
