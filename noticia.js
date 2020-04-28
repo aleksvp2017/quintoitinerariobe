@@ -1,5 +1,6 @@
 var Helper = require('./helper.js')
-var moment = require('moment');
+var moment = require('moment')
+const chalk = require('chalk')
 
 
 const obterNoticias = async () => {
@@ -8,7 +9,7 @@ const obterNoticias = async () => {
     await axios.get(process.env.DB_URL_NOTICIAS).then((response) => {
         noticias = response.data
     }).catch((error) => {
-        console.log('erro ao buscar noticias', error)
+        console.log(chalk.red('erro ao buscar noticias', error))
     })
     return noticias
 }
@@ -67,7 +68,7 @@ const procurarNoticia = async (filtro) => {
         })
 
     }).catch((error) => {
-        console.log('erro ao buscar notícias', error)
+        console.log(chalk.red('erro ao buscar notícias', error))
     })
     return noticiaIndice
 }

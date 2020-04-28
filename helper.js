@@ -1,24 +1,7 @@
-
-
-const validarUsuario = async (email, password) => {
-    var validUser = null
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_USERS).then((response) => {
-        users = response.data.filter((user) => user.email === email && user.senha === password)
-        if (users.length > 0){
-            validUser = users[0]
-        }
-    }).catch((error) => {
-        console.log('erro ao buscar usuarios', error)
-    })
-    return validUser
-}
-
-
-function gerarId(usuarios){
+function gerarId(itens){
     var id = 0;
-    usuarios.map((usuario)=> {
-        usuario.id > id ? id = usuario.id : id = id
+    itens.map((item)=> {
+        item.id > id ? id = item.id : id = id
     })
     return ++id
 }
@@ -56,37 +39,7 @@ function encripta(senha) {
     return senhaHash
 }
 
-const enviarEmail = (assunto, mensagem, destinatario) => {
-    return new Promise((resolve,reject)=>{
-        var nodemailer = require('nodemailer');
-        var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-            user: 'aleksvp@gmail.com',
-            pass: process.env.SECRET_PROVEDOR_EMAIL
-            }
-        });
-        
-        var mailOptions = {
-            from: 'aleksvp@gmail.com',
-            to: destinatario,
-            subject: assunto,
-            html: mensagem
-        };
-        
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                reject(error)
-            }
-            else {
-                resolve('Mensagem enviada com sucesso')
-            }
-        });
-    })
-}
-
 module.exports = {
-    validarUsuario, gerarId, carregaDadosBanco, gravaDadosBanco, 
-    sleep, enviaErroAdequado, encripta, enviarEmail
+    gerarId, carregaDadosBanco, gravaDadosBanco, 
+    sleep, enviaErroAdequado, encripta
   };

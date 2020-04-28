@@ -34,11 +34,16 @@ app.post('/usuarios/:id', Usuario.alterar)
 app.delete('/usuarios/:id', Usuario.excluir)
 app.post('/alterarSenha', Usuario.alterarSenha)
 
+//WELCOME
+app.get('/bemvindo', (req, res, next) => {
+    res.status(200).json({ mensagem: 'App no ar' })
+} )
+
 //MENSAGENS
 var Mensagem = require('./mensagem.js')
 app.post('/mensagem', Mensagem.enviar)
 
-
-app.listen(process.env.PORT, () => { console.log('Server up and listening at ' + process.env.PORT)})
+const chalk = require('chalk');
+app.listen(process.env.PORT, () => { console.log(chalk.underline.blue('Server up and listening at ' + process.env.PORT))})
 
 
