@@ -36,7 +36,7 @@ app.post('/alterarSenha', Usuario.alterarSenha)
 
 //WELCOME
 app.get('/bemvindo', (req, res, next) => {
-    res.status(200).json({ mensagem: 'App online' })
+    res.status(200).json({ mensagem: 'Bem vindo, app online' })
 } )
 
 //MENSAGENS
