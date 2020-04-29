@@ -1,18 +1,10 @@
 var Helper = require('./helper.js')
 var moment = require('moment')
 const chalk = require('chalk')
-
-
-const obterNoticias = async () => {
-    var noticias = []
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_NOTICIAS).then((response) => {
-        noticias = response.data
-    }).catch((error) => {
-        console.log(chalk.red('erro ao buscar noticias', error))
-    })
-    return noticias
-}
+const { Pool } = require('pg')
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
 
 const listarNoticias = async (req, res) => {
     //await sleep(20000).then(() => { console.log("teste atraso!"); });
@@ -22,8 +14,13 @@ const listarNoticias = async (req, res) => {
             Helper.enviaErroAdequado(err, res)
         }
         else {
-            var noticias = await obterNoticias()
-            res.status(200).json({ noticias })
+            try{
+                let noticias = await (await pool.query('select * from noticia order by datapublicacao desc')).rows
+                res.status(200).json({ noticias })
+            }
+            catch(error){
+                console.log(chalk.red('erro ao buscar notícias', error))
+            }              
         }
     })
 }
@@ -35,42 +32,19 @@ const incluirNoticia =  async (req, res) => {
             Helper.enviaErroAdequado(err, res)
         }
         else{
-            let dados = Helper.carregaDadosBanco()
-            let dataPublicacao = moment().format("DD/MM/YYYY")
-            let id = Helper.gerarId(dados.noticias)
-            var noticia = {...req.body.noticia, id: id,datapublicacao: dataPublicacao}
-            dados.noticias.push(noticia)
-            let erroAoGravar = false
-            await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
-            if (erroAoGravar){
-                res.status(401).json({error: `Error ao gravar dados ${erroAoGravar}`})
+            try{
+                let noticia = req.body.noticia
+                //Tem que ter o RETURNING * para dizer que quero a linha recém inserida como retorno
+                let result = await pool.query('insert into noticia (titulo, conteudo) values ($1, $2) RETURNING *', [noticia.titulo, noticia.conteudo])
+                noticia = result.rows[0]
+                res.status(200).json( {mensagem: 'Notícia registrada com sucesso', noticia})                    
             }
-            else{
-                res.status(200).json( {mensagem: 'Notícia registrada com sucesso', noticia})
+            catch (error){
+                res.status(401).json({error: `Error ao gravar dados ${error}`})
+
             }    
         }
     })
-}
-
-const procurarNoticia = async (filtro) => {
-    var noticiaIndice = {
-        noticia: null,
-        indice: -1
-    }
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_NOTICIAS).then((response) => {
-        response.data.filter((noticia, index) => {
-            if (filtro.id && (noticia.id == filtro.id)){
-                noticiaIndice.indice = index
-                noticiaIndice.noticia = noticia
-                return noticia
-            }
-        })
-
-    }).catch((error) => {
-        console.log(chalk.red('erro ao buscar notícias', error))
-    })
-    return noticiaIndice
 }
 
 const alterarNoticia =  async (req, res) => {
@@ -80,24 +54,15 @@ const alterarNoticia =  async (req, res) => {
             Helper.enviaErroAdequado(err, res)
         }
         else{
-            var noticiaIndice = await procurarNoticia({id: req.body.noticia.id})
-            if (noticiaIndice.noticia == null){
-                res.status(401).json({error: 'Notícia não encontrada'})
+            try{
+                let result = await pool.query('update noticia set titulo = $1, conteudo = $2 where noticiaid = $3 returning *', 
+                    [req.body.noticia.titulo, req.body.noticia.conteudo, req.body.noticia.noticiaid])
+                let noticia = result.rows[0]
+                console.log(noticia)
+                res.status(200).json( {mensagem: 'Notícia alterada com sucesso', noticia})    
             }
-            else{
-                let dados = Helper.carregaDadosBanco()
-                dados.noticias.splice(noticiaIndice.indice, 1)
-                var dataPublicacao = moment().format("DD/MM/YYYY")
-                var noticia = { ...req.body.noticia, datapublicacao: dataPublicacao}
-                dados.noticias.push(noticia)
-                let erroAoGravar = false
-                await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
-                if (erroAoGravar){
-                    res.status(401).json({error: `Error ao gravar dados ${erroAoGravar}`})
-                }
-                else{
-                    res.status(200).json( {mensagem: 'Notícia alterada com sucesso', noticia})
-                }    
+            catch (error){
+                res.status(401).json({error: `Error ao gravar dados ${error}`})
             }
         }
     })
@@ -110,17 +75,14 @@ const apagarNoticia =  async (req, res) => {
             Helper.enviaErroAdequado(err, res)
         }
         else{
-            let dados = Helper.carregaDadosBanco()
-            var noticiaIndice = await procurarNoticia(req.body.noticia)
-            dados.noticias.splice(noticiaIndice, 1)
-            let erroAoGravar = false
-            await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
-            if (erroAoGravar){
-                res.status(401).json({error: `Error ao gravar dados ${erroAoGravar}`})
+            try{
+                await pool.query('delete from noticia where noticiaid = $1', 
+                    [req.params.id])
+                res.status(200).json( {mensagem: 'Notícia excluída com sucesso'})    
             }
-            else{
-                res.status(200).json( {mensagem: 'Notícia apagada com sucesso'})
-            }    
+            catch (error){
+                res.status(401).json({error: `Error ao excluir notícia ${error}`})
+            } 
         }
     })
 }

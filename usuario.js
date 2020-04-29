@@ -1,17 +1,26 @@
 var Helper = require('./helper.js')
+var Mensagem = require('./mensagem.js')
 const chalk = require('chalk')
+
+const { Pool } = require('pg')
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
+/*
+//export DATABASE_URL=postgres://quintoitinerario:quintoitinerario@localhost:5432/postgres
+*/
 
 const validar = async (email, password) => {
     var validUser = null
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_USERS).then((response) => {
-        users = response.data.filter((user) => user.email === email && user.senha === password)
-        if (users.length > 0){
-            validUser = users[0]
+    try{
+        let result = await pool.query('select * from usuario where email=$1 and senha=$2', [email, password])
+        if (result){
+            validUser = result.rows[0]
         }
-    }).catch((error) => {
+    }
+    catch(error){
         console.log(chalk.red('erro ao buscar usuarios', error))
-    })
+    }
     return validUser
 }
 
@@ -36,23 +45,22 @@ const login = async function (req, res, next) {
 
 const buscar = async (filtro) => {
     var user = null
-    const axios = require('axios').default
-    await axios.get(process.env.DB_URL_USERS).then((response) => {
-        users = response.data.filter((user) => {
-            if (filtro.email && (user.email === filtro.email)){
-                return user
-            }
-            if (filtro.id && (user.id == filtro.id)){
-                return user
-            }
-        })
-
-        if (users.length != 0){
-            user = users[0]
+    try{
+        var result = null
+        if (filtro.email){
+            result = await pool.query('select * from usuario where email=$1', [filtro.email])
         }
-    }).catch((error) => {
+        else if (filtro.id){
+            result = await pool.query('select * from usuario where id=$1', [filtro.id])
+        }
+        if (result){
+            user = result.rows[0]
+        }
+    }
+    catch(error){
         console.log(chalk.red('erro ao buscar usuarios', error))
-    })
+    }
+    console.log(user)
     return user
 }
 
@@ -60,18 +68,14 @@ const registrar = async function(req, res, next) {
     //verifica se ja existe email na base
     var usuario = await buscar({email:req.body.usuario.email})
     if (usuario == null){
-        let dados = Helper.carregaDadosBanco()
-       
-        dados.usuarios.push({id: Helper.gerarId(dados.usuarios), ...req.body.usuario})
-
-        let erroAoGravar = false
-        await Helper.gravaDadosBanco(dados).then().catch((error)=> erroAoGravar = error)
-        if (erroAoGravar){
-            res.status(401).json({error: `Error ao gravar dados ${erroAoGravar}`})
-        }
-        else{
+        try{
+            usuario = req.body.usuario
+            await pool.query('insert into usuario (nome, email, senha) values ($1,$2,$3)', 
+                [usuario.nome, usuario.email, usuario.senha])
             res.status(200).json( {mensagem: 'Usuário registrado com sucesso'})
-            next()
+        }
+        catch(error){
+            res.status(401).json({error: `Error ao gravar dados ${error}`})
         }
     }
     else{
@@ -82,11 +86,14 @@ const registrar = async function(req, res, next) {
 async function regerarSenhaUsuario(usuario) {
     let senhaGerada = Math.random().toString(36).slice(-8)
     usuario.senha = Helper.encripta(senhaGerada)
-    let dados = Helper.carregaDadosBanco()
-    dados.usuarios = dados.usuarios.filter((usuario) => usuario.id != usuario.id)
-    dados.usuarios.push(usuario)
     let erroAoGravar = false
-    await Helper.gravaDadosBanco(dados).then().catch((error) => erroAoGravar = error)
+    try{
+        await pool.query('update usuario set senha = $1 where usuarioid = $2', 
+            [usuario.senha, usuario.usuarioid])
+    }
+    catch(error){
+        erroAoGravar = true
+    }
     return { erroAoGravar, senhaGerada }
 }
 
@@ -119,51 +126,32 @@ const alterar = async function (req, res, next) {
             Helper.enviaErroAdequado(err, res)
         }
         else {
-            var usuario = await buscar({ id: req.body.usuario.id })
-            if (usuario == null) {
-                res.status(401).json({ error: 'Usuário não encontrado' })
+            try{
+                let usuario = req.body.usuario
+                await pool.query('update usuario set nome = $1, email = $2 where usuarioid = $4', 
+                    [usuario.nome, usuario.email, usuario.usuarioid])
+                res.status(200).json( {mensagem: 'Dados alterados com sucesso'})
             }
-            else {
-                let dados = Helper.carregaDadosBanco()
-                req.body.usuario.senha = usuario.senha
-                dados.usuarios = dados.usuarios.filter((usuario) => usuario.id != usuario.id)
-                dados.usuarios.push(req.body.usuario)
-                let erroAoGravar = false
-                await Helper.gravaDadosBanco(dados).then().catch((error) => erroAoGravar = error)
-                if (erroAoGravar) {
-                    res.status(401).json({ error: `Error ao gravar dados ${erroAoGravar}` })
-                }
-                else {
-                    res.status(200).json({ mensagem: 'Dados alterados com sucesso' })
-                }
+            catch(error){
+                res.status(401).json({error: `Error ao gravar dados ${error}`})
             }
         }
     })
 }
 
-const excluir = async function (req, res, next) {
+const excluir = async function (req, res) {
     var jwt = require('jsonwebtoken')
     jwt.verify(req.token, process.env.SECRET, async (err, decoded) => {
         if (err) {
             Helper.enviaErroAdequado(err, res)
         }
         else {
-            var usuario = await buscar({ id: req.body.usuario.id })
-            if (usuario == null) {
-                res.status(401).json({ error: 'Usuário não encontrado' })
+            try{
+                await pool.query('delete from usuario where usuarioid = $1', [req.params.id])
+                res.status(200).json( {mensagem: 'Usuário excluído com sucesso'})
             }
-            else {
-                let dados = Helper.carregaDadosBanco()
-                dados.usuarios = dados.usuarios.filter((usuario) => usuario.id != usuario.id)
-                let erroAoGravar = false
-                await Helper.gravaDadosBanco(dados).then().catch((error) => erroAoGravar = error)
-                if (erroAoGravar) {
-                    res.status(401).json({ error: `Error ao gravar dados ${erroAoGravar}` })
-                }
-                else {
-                    res.status(200).json({ mensagem: 'Usuário excluído com sucesso' })
-                    next()
-                }
+            catch(error){
+                res.status(401).json({error: `Error ao gravar dados ${error}`})
             }
         }
     })

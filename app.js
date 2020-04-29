@@ -36,27 +36,8 @@ app.post('/alterarSenha', Usuario.alterarSenha)
 
 //WELCOME
 app.get('/bemvindo', (request, response, next) => {
-    const { Pool, Client } = require('pg')
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-pool.query('SELECT NOW()', (err, res) => {
-    console.log(err, res)
-    pool.end()
-  })
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-  })
-  client.connect()
-  client.query('SELECT * FROM USUARIO', (err, res) => {
-    response.status(200).json({ mensagem: res.rows })
-    client.end()
-  })  
-    
+    response.status(200).json({ mensagem: res.rows[0] })
 } )
-
-
-
 
 
 //MENSAGENS
