@@ -169,18 +169,14 @@ const alterarSenha = async function (req, res, next) {
                 res.status(401).json({ error: 'Senha atual incorreta' })
             }
             else {
-                let dados = Helper.carregaDadosBanco()
-                usuario.senha = req.body.senhaNova
-                dados.usuarios = dados.usuarios.filter((usuario) => usuario.id != usuario.id)
-                dados.usuarios.push(usuario)
-                let erroAoGravar = false
-                await Helper.gravaDadosBanco(dados).then().catch((error) => erroAoGravar = error)
-                if (erroAoGravar) {
-                    res.status(401).json({ error: `Error ao gravar dados ${erroAoGravar}` })
+                try{
+                    let usuario = req.body.usuario
+                    await pool.query('update usuario set senha = $1 where usuarioid = $2', 
+                        [req.body.senhaNova, usuario.usuarioid])
+                    res.status(200).json( {mensagem: 'Senha alterada com sucesso'})
                 }
-                else {
-                    res.status(200).json({ mensagem: 'Senha alterada com sucesso' })
-                    next()
+                catch(error){
+                    res.status(401).json({error: `Error ao alterar senha ${error}`})
                 }
             }
         }
