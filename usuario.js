@@ -128,7 +128,7 @@ const alterar = async function (req, res, next) {
         else {
             try{
                 let usuario = req.body.usuario
-                await pool.query('update usuario set nome = $1, email = $2 where usuarioid = $4', 
+                await pool.query('update usuario set nome = $1, email = $2 where usuarioid = $3', 
                     [usuario.nome, usuario.email, usuario.usuarioid])
                 res.status(200).json( {mensagem: 'Dados alterados com sucesso'})
             }
