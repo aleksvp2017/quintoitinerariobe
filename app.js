@@ -13,9 +13,8 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 
 //para ler .env
-const dotenv = require('dotenv');
-dotenv.config();
-
+const dotenv = require('dotenv')
+dotenv.config()
 
 //NOTÍCIAS
 var Noticias = require('./noticia.js')
@@ -33,6 +32,14 @@ app.post('/recuperarSenha', Usuario.recuperarSenha)
 app.post('/usuarios/:id', Usuario.alterar)
 app.delete('/usuarios/:id', Usuario.excluir)
 app.post('/alterarSenha', Usuario.alterarSenha)
+
+
+//Para ler arquivo enviado no posto
+const multer = require("multer")
+//VAGAS
+var Vagas = require('./vagas.js')
+//o nome tem que bater com o do parâmetro enviado no formdata
+app.post('/vagas/importar', multer().array("fileuploaded"), Vagas.importarPlanilha)
 
 //WELCOME
 app.get('/bemvindo', (request, response, next) => {
