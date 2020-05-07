@@ -37,7 +37,7 @@ const incluirNoticia =  async (req, res) => {
                 //Tem que ter o RETURNING * para dizer que quero a linha recém inserida como retorno
                 let result = await pool.query('insert into noticia (titulo, conteudo) values ($1, $2) RETURNING *', [noticia.titulo, noticia.conteudo])
                 noticia = result.rows[0]
-                res.status(200).json( {mensagem: 'Notícia registrada com sucesso', noticia})                    
+                res.status(200).json( {message: 'Notícia registrada com sucesso', noticia})                    
             }
             catch (error){
                 res.status(401).json({error: `Error ao gravar dados ${error}`})
@@ -59,7 +59,7 @@ const alterarNoticia =  async (req, res) => {
                     [req.body.noticia.titulo, req.body.noticia.conteudo, req.body.noticia.noticiaid])
                 let noticia = result.rows[0]
                 console.log(noticia)
-                res.status(200).json( {mensagem: 'Notícia alterada com sucesso', noticia})    
+                res.status(200).json( {message: 'Notícia alterada com sucesso', noticia})    
             }
             catch (error){
                 res.status(401).json({error: `Error ao gravar dados ${error}`})
@@ -78,7 +78,7 @@ const apagarNoticia =  async (req, res) => {
             try{
                 await pool.query('delete from noticia where noticiaid = $1', 
                     [req.params.id])
-                res.status(200).json( {mensagem: 'Notícia excluída com sucesso'})    
+                res.status(200).json( {message: 'Notícia excluída com sucesso'})    
             }
             catch (error){
                 res.status(401).json({error: `Error ao excluir notícia ${error}`})

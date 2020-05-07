@@ -72,7 +72,7 @@ const registrar = async function(req, res, next) {
             usuario = req.body.usuario
             await pool.query('insert into usuario (nome, email, senha) values ($1,$2,$3)', 
                 [usuario.nome, usuario.email, usuario.senha])
-            res.status(200).json( {mensagem: 'Usuário registrado com sucesso'})
+            res.status(200).json( {message: 'Usuário registrado com sucesso'})
         }
         catch(error){
             res.status(401).json({error: `Error ao gravar dados ${error}`})
@@ -109,7 +109,7 @@ const recuperarSenha = async function (req, res, next) {
         }
         else {
             Mensagem.enviarEmail('Redefinição de senha', `Sua nova senha é ${senhaGerada}`, req.body.email).then((mensagem) => {
-                res.status(200).json({ mensagem: 'Nova senha enviada com sucesso' })
+                res.status(200).json({ message: 'Nova senha enviada com sucesso' })
                 next()
             }).catch(error => {
                 console.log(chalk.red(error))
@@ -130,7 +130,7 @@ const alterar = async function (req, res, next) {
                 let usuario = req.body.usuario
                 await pool.query('update usuario set nome = $1, email = $2 where usuarioid = $3', 
                     [usuario.nome, usuario.email, usuario.usuarioid])
-                res.status(200).json( {mensagem: 'Dados alterados com sucesso'})
+                res.status(200).json( {message: 'Dados alterados com sucesso'})
             }
             catch(error){
                 res.status(401).json({error: `Error ao gravar dados ${error}`})
@@ -148,7 +148,7 @@ const excluir = async function (req, res) {
         else {
             try{
                 await pool.query('delete from usuario where usuarioid = $1', [req.params.id])
-                res.status(200).json( {mensagem: 'Usuário excluído com sucesso'})
+                res.status(200).json( {message: 'Usuário excluído com sucesso'})
             }
             catch(error){
                 res.status(401).json({error: `Error ao gravar dados ${error}`})
@@ -173,7 +173,7 @@ const alterarSenha = async function (req, res, next) {
                     let usuario = req.body.usuario
                     await pool.query('update usuario set senha = $1 where usuarioid = $2', 
                         [req.body.senhaNova, usuario.usuarioid])
-                    res.status(200).json( {mensagem: 'Senha alterada com sucesso'})
+                    res.status(200).json( {message: 'Senha alterada com sucesso'})
                 }
                 catch(error){
                     res.status(401).json({error: `Error ao alterar senha ${error}`})
