@@ -28,9 +28,9 @@ function enviaErroAdequado(err, res) {
     let msgErro = "Token não encontrado"
     if (err.name.startsWith('TokenExpiredError')) {
         console.log('Token expirado')
-        msgErro = "invalid_token"
+        msgErro = "Sessão expirada, atualize a página para realizar novo login"
     }
-    res.status(401).send(msgErro)
+    res.status(440).send({error: msgErro})
 }
 
 function encripta(senha) {

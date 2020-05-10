@@ -1,51 +1,59 @@
 const estrutura = {
     nome: 'Vagas',
     colunasObrigatorias: ['ANO'],
+    colunasAtualizaveis: ['uf','ano', 'saldo', 'valoraprovado', 'aprovada', 'homologada', 'matricularealizada',
+        'modalidade', 'tipo'],
     colunas: {
       ANO: {
         nome: 'ANO',
         validar(valor){
+          valor = parseInt(valor)
           if (!Number.isInteger(valor)){
               return 'Coluna ' + this.nome + ' deve ser um número inteiro'
           }
         }
       },
       SALDO: {
-        nome: 'ANO',
+        nome: 'SALDO',
         validar(valor){
-            if (!Number.isInteger(valor)){
+            valor = parseInt(valor)
+            if (valor && !Number.isInteger(valor)){
                 return 'Coluna ' + this.nome + ' deve ser um número inteiro'
             }
         }
       },
       VALORAPROVADO: {
-        nome: 'ANO',
+        nome: 'VALORAPROVADO',
         validar(valor){
-            if (!Number.isInteger(valor)){
+            valor = parseInt(valor)
+            if (valor && !Number.isInteger(valor)){
                 return 'Coluna ' + this.nome + ' deve ser um número inteiro'
             }
         }
       },
       APROVADA: {
-        nome: 'ANO',
+        nome: 'APROVADA',
         validar(valor){
+          valor = parseInt(valor)
           if (!Number.isInteger(valor)){
               return 'Coluna ' + this.nome + ' deve ser um número inteiro'
           }
         }
       },
       HOMOLOGADA: {
-        nome: 'ANO',
+        nome: 'HOMOLOGADA',
         validar(valor){
-            if (!Number.isInteger(valor)){
+            valor = parseInt(valor)
+            if (valor && !Number.isInteger(valor)){
                 return 'Coluna ' + this.nome + ' deve ser um número inteiro'
             }
         }
       },
       MATRICULAREALIZADA: {
-        nome: 'ANO',
+        nome: 'MATRICULAREALIZADA',
         validar(valor){
-            if (!Number.isInteger(valor)){
+            valor = parseInt(valor)
+            if (valor && !Number.isInteger(valor)){
                 return 'Coluna ' + this.nome + ' deve ser um número inteiro'
             }
         }
@@ -61,7 +69,7 @@ const estrutura = {
       TIPO: {
         nome: 'TIPO',
         validar(valor){
-          if (valor != 'R' && valor != 'N') {
+          if (valor != 'Repactuação' && valor != 'Novas') {
               return 'Coluna ' + this.nome + ' deve ter valor R ou N'
           }
         }

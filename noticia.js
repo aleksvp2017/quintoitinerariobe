@@ -1,5 +1,4 @@
 var Helper = require('./helper.js')
-var moment = require('moment')
 const chalk = require('chalk')
 const { Pool } = require('pg')
 const pool = new Pool({

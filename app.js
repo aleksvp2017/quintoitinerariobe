@@ -40,6 +40,9 @@ const multer = require("multer")
 var Vagas = require('./vagas.js')
 //o nome tem que bater com o do parâmetro enviado no formdata
 app.post('/vagas/importar', multer().array("fileuploaded"), Vagas.importarPlanilha)
+app.get('/vagas', Vagas.listar)
+app.delete('/vagas', Vagas.excluir)
+app.post('/vagas/:id', Vagas.alterar)
 
 //WELCOME
 app.get('/bemvindo', (request, response, next) => {

@@ -32,7 +32,7 @@ const enviarEmail = (assunto, mensagem, destinatario) => {
 
 const enviar = async function (req, res, next) {
     console.log(req)
-    enviarEmail(req.body.assunto, req.body.mensagem, req.body.destinatario).then((mensagem) => {
+    enviarEmail(req.body.assunto, req.body.mensagem, req.body.destinatario).then((message) => {
         res.status(200).json({ message })
     }).catch(error => {
         console.log(chalk.red(error))
